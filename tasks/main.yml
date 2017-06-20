@@ -1,0 +1,68 @@
+---
+# tasks file for fmw-domain-prereq
+---
+# tasks file for build-inventory
+- block:
+  - name: packages check
+    yum: name="{{ item }}" state=present
+    with_items:
+      - installPackages
+
+  - name: sysctl vm.swappiness = {{ swappiness }}
+    sysctl: name=vm.swappiness value={{ swappiness }} state=present reload=yes
+
+  - name: sysctl net.core.rmem_max = {{ rmem_max }}
+    sysctl: name=net.core.rmem_max value={{ rmem_max }} state=present reload=yes
+
+  - name: sysctl net.core.wmem_max = {{ wmem_max }}
+    sysctl: name=net.core.wmem_max value={{ wmem_max }} state=present reload=yes
+
+  - name: check group {{ group }} exists
+    group: name={{ group }} gid={{ gid }} state=present
+
+  - name: {{ homeDir }} exists
+    file: path={{ homeDir }} state=directory
+
+  - name: check user {{ user }} exists
+    user: name={{ user }} group={{ group }} home={{ homeDir }}/{{ user }} uid={{ uid }} password={{ '{{ password }}' |password_hash('sha512') }}
+      state=present shell=/bin/bash
+
+  - name: limit nofile
+    pam_limits: domain={{ user }} limit_type=- limit_item=nofile value={{ nofile }}
+
+  - name: directory exists
+    file: path="{{ item.name }}" state=directory mode=0755 owner={{ user }}
+    with_items:
+      - "{{ fstab }}"
+
+  - name: mount check
+    mount: name="{{ item.name }}" src="{{ item.src }}"
+      fstype="nfs" opts={{ nfsOptions }}
+      state=mounted
+    with_items:
+      - "{{ fstab }}"
+
+  - name: remove redundant mount
+    mount: name="{{ item.name }}" src="{{ item.src }}" fstype="nfs" state=unmounted
+    with_items:
+      - "{{ apsend_mounts }}"
+
+  - name: check directories
+    file: path="{{ item }}" state=directory owner=oracle group=oinstall mode=0755
+    with_items:
+      - {{ directoriesToCreate }}
+
+#  - name: 90-nproc reconfig
+#    template: src="90-nproc.conf.j2" dest=/etc/security/limits.d/90-nproc.conf owner=root group=root mode=0644
+  - name: 90-nproc config
+    lineinfile: path=/etc/security/limits.d/90-nproc.conf regexp="^*          soft    nproc%" line="*          soft    nproc     {{ nofile }}"
+
+  - name: sudoers
+    lineinfile: "dest=/etc/sudoers state=present regexp='^{{ user }}'
+      line='{{ user }} ALL=(root) /sbin/chkconfig,/sbin/service,/bin/cp,/bin/chmod'"
+
+  - name: requiretty
+    lineinfile: "dest=/etc/sudoers state=present regexp='^Defaults    requiretty%'
+      line='Defaults    !requiretty'"
+
+  become: yes

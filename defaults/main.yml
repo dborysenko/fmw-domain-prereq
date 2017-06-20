@@ -1,0 +1,39 @@
+---
+# defaults file for fmw-domain-prereq
+installPackages:
+  - binutils
+  - compat-libcap1
+  #- compat-libstdc++
+  - gcc
+  - gcc-c++
+  - glibc
+  - glibc-devel
+  - libaio
+  - libaio-devel
+  - libgcc
+  - libstdc++
+  - libstdc++-devel
+  - sysstat
+
+directoriesToCreate: []
+
+swappiness: 0
+rmem_max: 2096304
+wmem_max: 2096304
+homeDir: /users
+user: oracle
+password: q1w2e3
+uid: 150
+group: oinstall
+gid: 151
+nofile: 61440
+nfsOptions: 'rw,bg,hard,noacl,rsize=32768,wsize=32768,vers=3,nointr,timeo=600,proto=tcp,suid'
+
+fstab:
+  - { name: '/opt/oracle/11g', src: '' }
+  - { name: '/opt/oracle/admin/shared', src: 'nfs.example.com:/vol/shared' }
+  - { name: '/opt/oracle/admin/aservers', src: 'nfs.example.com:/vol/aservers' }
+  - { name: '/opt/oracle/admin/appfiles', src: 'nfs.example.com:/vol/appfiles' }
+  - { name: '/opt/oracle/admin/logs', src: 'nfs.example.com:/vol/logs' }
+
+apsend_mounts: []
