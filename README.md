@@ -1,32 +1,85 @@
-Role Name
+FMW domain prereq
 =========
 
-A brief description of the role goes here.
+Simple role to check/set required settings for EL machines.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Tested on RedHat 6.x
 
 Role Variables
 --------------
+    # Linux family
+    OSFamily: "RedHat"
+    # Linux version
+    OSVersion: "6.7"
+    
+    # List of packages to check/install
+    installPackages:
+      - binutils
+      - compat-libcap1
+      #- compat-libstdc++
+      - gcc
+      - gcc-c++
+      - glibc
+      - glibc-devel
+      - libaio
+      - libaio-devel
+      - libgcc
+      - libstdc++
+      - libstdc++-devel
+      - sysstat
+    
+    # List of absolute directories to create
+    directoriesToCreate: []
+    
+    # sysctl settings
+    swappiness: 0
+    rmem_max: 2096304
+    wmem_max: 2096304
+    
+    # user/group to create
+    homeDir: /users
+    user: oracle
+    password: q1w2e3
+    uid: 150
+    group: oinstall
+    gid: 151
+    
+    # pam_limits number of open files
+    nofile: 61440
+    
+    # mount options
+    nfsOptions: 'rw,bg,hard,noacl,rsize=32768,wsize=32768,vers=3,nointr,timeo=600,proto=tcp,suid'
+    
+    # list of mounts to add/mount to fstab
+    fstab:
+      - { name: '/opt/oracle/11g', src: '' }
+      - { name: '/opt/oracle/admin/shared', src: 'nfs.example.com:/vol/shared' }
+      - { name: '/opt/oracle/admin/aservers', src: 'nfs.example.com:/vol/aservers' }
+      - { name: '/opt/oracle/admin/appfiles', src: 'nfs.example.com:/vol/appfiles' }
+      - { name: '/opt/oracle/admin/logs', src: 'nfs.example.com:/vol/logs' }
+    
+    # list of mounts to unmount/remove from fstab
+    apsend_mounts: []
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
+ansible-playbook - i hosts site.yml
+    
+    # site.yml
     - hosts: servers
       roles:
-         - { role: username.rolename, x: 42 }
-
+         - dborysenko.fmw-domain-prereq
+    
+    # hosts
+    [servers]
+    webserver.example.com
+    
+    
 License
 -------
 
@@ -35,4 +88,5 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Dmytro Borysenko
+borysenus@gmail.com
