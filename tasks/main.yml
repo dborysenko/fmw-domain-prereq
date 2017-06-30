@@ -1,12 +1,14 @@
 ---
 # tasks file for fmw-domain-prereq
----
-# tasks file for build-inventory
 - block:
+  - name: check OS version
+    fail: msg="OS Version missmutch"
+    when: ansible_distribution != OSFamily or ansible_distribution_version != OSVersion
+
   - name: packages check
     yum: name="{{ item }}" state=present
     with_items:
-      - installPackages
+      - "{{ installPackages }}"
 
   - name: sysctl vm.swappiness = {{ swappiness }}
     sysctl: name=vm.swappiness value={{ swappiness }} state=present reload=yes
@@ -20,7 +22,7 @@
   - name: check group {{ group }} exists
     group: name={{ group }} gid={{ gid }} state=present
 
-  - name: {{ homeDir }} exists
+  - name: directory {{ homeDir }} exists
     file: path={{ homeDir }} state=directory
 
   - name: check user {{ user }} exists
@@ -31,7 +33,7 @@
     pam_limits: domain={{ user }} limit_type=- limit_item=nofile value={{ nofile }}
 
   - name: directory exists
-    file: path="{{ item.name }}" state=directory mode=0755 owner={{ user }}
+    file: path="{{ item.name }}" state=directory owner={{ user }}
     with_items:
       - "{{ fstab }}"
 
@@ -50,19 +52,18 @@
   - name: check directories
     file: path="{{ item }}" state=directory owner=oracle group=oinstall mode=0755
     with_items:
-      - {{ directoriesToCreate }}
+      - "{{ directoriesToCreate }}"
 
-#  - name: 90-nproc reconfig
-#    template: src="90-nproc.conf.j2" dest=/etc/security/limits.d/90-nproc.conf owner=root group=root mode=0644
   - name: 90-nproc config
-    lineinfile: path=/etc/security/limits.d/90-nproc.conf regexp="^*          soft    nproc%" line="*          soft    nproc     {{ nofile }}"
+    lineinfile: path=/etc/security/limits.d/90-nproc.conf regexp="^\*\s*soft\s*nproc.*"
+      line="*          soft    nproc     {{ nofile }}"
 
   - name: sudoers
     lineinfile: "dest=/etc/sudoers state=present regexp='^{{ user }}'
       line='{{ user }} ALL=(root) /sbin/chkconfig,/sbin/service,/bin/cp,/bin/chmod'"
 
   - name: requiretty
-    lineinfile: "dest=/etc/sudoers state=present regexp='^Defaults    requiretty%'
-      line='Defaults    !requiretty'"
+    lineinfile: dest=/etc/sudoers state=present regexp="^Defaults\s*!?requiretty\s*"
+      line='Defaults    !requiretty'
 
   become: yes

@@ -1,5 +1,8 @@
 ---
 # defaults file for fmw-domain-prereq
+OSFamily: "RedHat"
+OSVersion: "6.7"
+
 installPackages:
   - binutils
   - compat-libcap1
