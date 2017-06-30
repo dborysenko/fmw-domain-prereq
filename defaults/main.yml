@@ -30,7 +30,7 @@ uid: 150
 group: oinstall
 gid: 151
 nofile: 61440
-nfsOptions: 'rw,bg,hard,noacl,rsize=32768,wsize=32768,vers=3,nointr,timeo=600,proto=tcp,suid'
+nfsOptions: 'rw,proto=tcp,suid'
 
 fstab:
   - { name: '/opt/oracle/11g', src: '' }

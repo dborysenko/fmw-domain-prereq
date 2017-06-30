@@ -1,7 +1,7 @@
 FMW domain prereq
 =========
 
-Simple role to check/set required settings for EL machines.
+Simple role to check/set required settings for EL machines before installing weblogic domain.
 
 Requirements
 ------------
